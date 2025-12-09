@@ -1,8 +1,10 @@
 package com.example.geom;
 
 import com.example.geom.algoritmos.DetectorFiguras;
+import com.example.geom.data.CasosPrueba;
 import com.example.geom.model.Figura;
 import com.example.geom.model.Punto;
+import com.example.geom.model.TipoFigura;
 import com.example.geom.ui.GraphCanvas;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -95,28 +97,41 @@ public class Main extends Application {
         tablaFiguras.getColumns().addAll(colTipo, colArea, colPts);
 
         // =============================
-        // ZOOM (slider)
+        // CASOS DE PRUEBA
         // =============================
-        Slider zoomSlider = new Slider(20, 90, 40);
-        zoomSlider.setShowTickLabels(true);
-        zoomSlider.setShowTickMarks(true);
-        zoomSlider.setBlockIncrement(10);
+        ComboBox<String> cmbCasos = new ComboBox<>();
+        cmbCasos.getItems().addAll("Caso 1 (Mix)", "Caso 2 (Rectángulos)", "Caso 3 (Triángulos)",
+                "Caso 4 (Multi-cuadrados)");
+        cmbCasos.setPromptText("Cargar caso de prueba");
+        cmbCasos.setMaxWidth(Double.MAX_VALUE); // Llenar ancho
+
+        // Fila de botones principales
+        HBox filaBotones = new HBox(10, btnDetectar, btnMostrarFigura);
+        filaBotones.setAlignment(Pos.CENTER_LEFT);
 
         // =============================
         // ARMAR PANEL IZQUIERDO
         // =============================
+        // Area de resumen de conteo
+        TextArea txtResumen = new TextArea();
+        txtResumen.setPrefHeight(200); // Aumentado
+        txtResumen.setEditable(false);
+        txtResumen.setPromptText("Resumen de figuras encontradas...");
+
         left.getChildren().addAll(
+                new Label("Cargar Datos de Prueba"),
+                cmbCasos,
+                new Separator(),
                 new Label("Agregar puntos manualmente"),
                 filaAdd,
                 tablaPuntos,
                 filaAcciones,
+                new Separator(),
                 new Label("Figuras detectadas"),
+                filaBotones, // Botones juntos
                 tablaFiguras,
-                btnDetectar,
-                btnMostrarFigura,
-                new Label("Zoom"),
-                zoomSlider
-        );
+                new Label("Resumen:"),
+                txtResumen);
 
         // =============================
         // CANVAS (Plano cartesiano)
@@ -138,6 +153,7 @@ public class Main extends Application {
                 Punto p = new Punto(x, y);
                 puntosUsuario.add(p);
 
+                cmbCasos.getSelectionModel().clearSelection(); // Limpiar seleccion de caso si se agrega manual
                 tablaPuntos.setItems(FXCollections.observableArrayList(puntosUsuario));
                 canvas.drawPoints(puntosUsuario);
                 txtX.clear();
@@ -160,11 +176,14 @@ public class Main extends Application {
         });
 
         // Limpiar puntos
+        // Limpiar puntos
         btnLimpiar.setOnAction(e -> {
             puntosUsuario.clear();
             tablaPuntos.setItems(FXCollections.observableArrayList());
             tablaFiguras.setItems(FXCollections.observableArrayList());
             canvas.drawPoints(puntosUsuario);
+            canvas.drawFigura(null); // Limpiar figura actual
+            txtResumen.clear();
         });
 
         // Detectar figuras
@@ -175,6 +194,46 @@ public class Main extends Application {
             }
             List<Figura> figs = DetectorFiguras.detectarFiguras(puntosUsuario);
             tablaFiguras.setItems(FXCollections.observableArrayList(figs));
+
+            // Generar Resumen
+            long nRect = figs.stream().filter(f -> f.getTipo() == TipoFigura.RECTANGULO).count();
+            long nCuad = figs.stream().filter(f -> f.getTipo() == TipoFigura.CUADRADO).count();
+            long nTriR = figs.stream().filter(f -> f.getTipo() == TipoFigura.TRIANGULO_RECTANGULO).count();
+            long nTriA = figs.stream().filter(f -> f.getTipo() == TipoFigura.TRIANGULO_ACUTANGULO).count();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Resumen:\n");
+            sb.append("- Rectángulos: ").append(nRect).append("\n");
+            sb.append("- Cuadrados: ").append(nCuad).append("\n");
+            sb.append("- T. Rectángulos: ").append(nTriR).append("\n");
+            sb.append("- T. Acutángulos: ").append(nTriA).append("\n");
+            sb.append("Total: ").append(figs.size());
+
+            txtResumen.setText(sb.toString());
+        });
+
+        // Cargar Caso de Prueba
+        cmbCasos.setOnAction(e -> {
+            String sel = cmbCasos.getValue();
+            if (sel == null)
+                return;
+
+            puntosUsuario.clear();
+            List<List<Punto>> casos = CasosPrueba.getCasos();
+
+            if (sel.contains("Caso 1"))
+                puntosUsuario.addAll(casos.get(0));
+            else if (sel.contains("Caso 2"))
+                puntosUsuario.addAll(casos.get(1));
+            else if (sel.contains("Caso 3"))
+                puntosUsuario.addAll(casos.get(2));
+            else if (sel.contains("Caso 4"))
+                puntosUsuario.addAll(casos.get(3));
+
+            tablaPuntos.setItems(FXCollections.observableArrayList(puntosUsuario));
+            tablaFiguras.getItems().clear();
+            txtResumen.clear();
+            canvas.drawPoints(puntosUsuario);
         });
 
         // Mostrar figura seleccionada — AHORA PERMANECE EN PANTALLA
@@ -184,11 +243,10 @@ public class Main extends Application {
                 new Alert(Alert.AlertType.INFORMATION, "Seleccione una figura primero").showAndWait();
                 return;
             }
-            canvas.drawFigura(f);  // <-- ya no se borra con hover ni mouse move
+            canvas.drawFigura(f); // <-- ya no se borra con hover ni mouse move
         });
 
         // Zoom
-        zoomSlider.valueProperty().addListener((obs, oldV, newV) -> canvas.setScale(newV.doubleValue()));
 
         // =============================
         // LAYOUT GENERAL

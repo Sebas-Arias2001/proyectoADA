@@ -39,7 +39,7 @@ public class GraphCanvas extends Canvas {
 
     private double lastX, lastY;
 
-    private Figura figuraActual = null;   // <-- NUEVO: guardar figura para que no desaparezca
+    private Figura figuraActual = null;
 
     private Consumer<List<Punto>> onPointsChanged;
 
@@ -87,7 +87,8 @@ public class GraphCanvas extends Canvas {
             Punto n = findNearest(e.getX(), e.getY());
             if (n != null) {
                 puntos.remove(n);
-                if (selected == n) selected = null;
+                if (selected == n)
+                    selected = null;
                 hover = null;
                 notifyPointsChanged();
             }
@@ -174,6 +175,8 @@ public class GraphCanvas extends Canvas {
     // FIND NEAREST POINT
     // ======================================================
     private Punto findNearest(double mx, double my) {
+        if (puntos == null)
+            return null;
         Punto n = null;
         double min = 10;
 
@@ -243,7 +246,8 @@ public class GraphCanvas extends Canvas {
     }
 
     private void drawPoints(GraphicsContext g) {
-        if (puntos == null) return;
+        if (puntos == null)
+            return;
 
         g.setFont(Font.font(12));
 
@@ -285,15 +289,14 @@ public class GraphCanvas extends Canvas {
     }
 
     public void drawFigura(Figura f) {
-        this.figuraActual = f;  // <-- guardar figura permanentemente
+        this.figuraActual = f; // <-- guardar figura permanentemente
         redraw();
     }
 
     private void drawFiguraInterno(GraphicsContext g, Figura f) {
 
-        Color c = (f.getTipo() == TipoFigura.CUADRADO ? Color.DARKGREEN :
-                (f.getTipo() == TipoFigura.RECTANGULO ? Color.DARKORANGE :
-                        Color.DARKRED));
+        Color c = (f.getTipo() == TipoFigura.CUADRADO ? Color.DARKGREEN
+                : (f.getTipo() == TipoFigura.RECTANGULO ? Color.DARKORANGE : Color.DARKRED));
 
         g.setStroke(c);
         g.setLineWidth(2);
@@ -305,8 +308,7 @@ public class GraphCanvas extends Canvas {
 
             g.strokeLine(
                     originX + a.getX() * scale, originY - a.getY() * scale,
-                    originX + b.getX() * scale, originY - b.getY() * scale
-            );
+                    originX + b.getX() * scale, originY - b.getY() * scale);
         }
     }
 
@@ -315,7 +317,8 @@ public class GraphCanvas extends Canvas {
     }
 
     private void notifyPointsChanged() {
-        if (onPointsChanged != null) onPointsChanged.accept(puntos);
+        if (onPointsChanged != null)
+            onPointsChanged.accept(puntos);
     }
 
     public void setScale(double s) {
