@@ -1,0 +1,8 @@
+com\example\geom\data\ListaPuntosRepository.class
+com\example\geom\Main.class
+com\example\geom\model\Punto.class
+com\example\geom\model\TipoFigura.class
+com\example\geom\ui\GraphCanvas.class
+com\example\geom\algoritmos\DetectorFiguras.class
+com\example\geom\model\Figura.class
+com\example\geom\algoritmos\CalculoArea.class
