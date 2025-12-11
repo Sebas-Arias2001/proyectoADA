@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug Main (Launcher)",
+            "request": "launch",
+            "mainClass": "com.example.geom.Launcher",
+            "projectName": "proyecto-geometria"
+        },
+        {
+            "type": "java",
+            "name": "Debug Main (Direct)",
+            "request": "launch",
+            "mainClass": "com.example.geom.Main",
+            "projectName": "proyecto-geometria"
+        },
+        {
+            "type": "java",
+            "name": "Debug Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        }
+    ]
+}
